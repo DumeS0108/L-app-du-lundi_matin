@@ -1,0 +1,429 @@
+/* =========================================
+   1. VARIABLES & CONFIGURATION GLOBALE
+   ========================================= */
+:root {
+    --bg-color: #2b002b;
+    --win-gray: #c0c0c0;
+    --win-dark-gray: #808080;
+    --win-blue: #000080;
+    --win-teal: #008080;
+    --win-light: #ffffff;
+    --win-border-dark: #000000;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+    background-color: var(--win-teal);
+    user-select: none;
+    color: black;
+}
+
+.hidden {
+    display: none !important;
+}
+
+button {
+    font-family: 'Courier New', Courier, monospace;
+    cursor: pointer;
+}
+
+/* =========================================
+   2. ÉCRAN DE CONNEXION
+   ========================================= */
+.full-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--bg-color), #000);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.login-window {
+    width: 300px;
+    box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.5);
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+}
+
+input {
+    width: 90%;
+    padding: 5px;
+    margin-bottom: 5px;
+    border: 2px inset var(--win-light);
+    background: white;
+    font-family: inherit;
+}
+
+/* =========================================
+   3. BOSS SCREEN & ALERT
+   ========================================= */
+#boss-alert {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: red;
+    color: yellow;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: 3px solid yellow;
+    font-size: 20px;
+    z-index: 9999;
+    animation: blink 0.5s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+#boss-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #008080;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: none;
+}
+
+.update-box {
+    background: #c0c0c0;
+    border: 2px outset white;
+    padding: 20px;
+    text-align: center;
+    width: 400px;
+}
+
+.progress-bar-bg {
+    width: 100%;
+    height: 20px;
+    background: white;
+    border: 2px inset gray;
+    margin: 10px 0;
+}
+
+.progress-bar-fill {
+    width: 12%;
+    height: 100%;
+    background: blue;
+}
+
+/* =========================================
+   4. SYSTÈME DE FENÊTRES
+   ========================================= */
+.os-window {
+    background-color: var(--win-gray);
+    border-top: 2px solid var(--win-light);
+    border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-border-dark);
+    border-bottom: 2px solid var(--win-border-dark);
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    width: 600px;
+    height: 450px;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+}
+
+.window-header {
+    background: linear-gradient(90deg, var(--win-blue), #1084d0);
+    color: white;
+    padding: 3px 5px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 25px;
+    cursor: move;
+}
+
+.window-body {
+    padding: 10px;
+    flex-grow: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.close-btn {
+    background: var(--win-gray);
+    border: 1px outset var(--win-light);
+    font-weight: bold;
+    width: 18px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.close-btn:active {
+    border: 1px inset var(--win-light);
+}
+
+/* =========================================
+   5. BUREAU & ICÔNES
+   ========================================= */
+.desktop-icons {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    flex-wrap: wrap;
+    height: 80vh;
+    align-content: flex-start;
+}
+
+.icon {
+    width: 80px;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+    text-shadow: 1px 1px 0 #000;
+}
+
+.icon:hover .icon-img {
+    filter: brightness(1.2);
+}
+
+.icon:hover .icon-text {
+    background-color: var(--win-blue);
+}
+
+.icon-img {
+    font-size: 40px;
+    margin-bottom: 5px;
+}
+
+.icon-text {
+    font-size: 14px;
+    padding: 2px;
+}
+
+/* =========================================
+   6. TASKBAR
+   ========================================= */
+.taskbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: var(--win-gray);
+    border-top: 2px solid var(--win-light);
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    z-index: 1000;
+}
+
+.start-btn {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    margin-right: 10px;
+    border: 2px outset var(--win-light);
+    background: var(--win-gray);
+    font-size: 14px;
+}
+
+.active-apps {
+    flex-grow: 1;
+    border-left: 2px solid var(--win-dark-gray);
+    border-right: 2px solid var(--win-light);
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+    height: 80%;
+}
+
+.app-tab {
+    background: #d4d4d4;
+    border: 2px inset var(--win-light);
+    padding: 3px 10px;
+    width: 150px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.tray {
+    border: 2px inset var(--win-light);
+    padding: 5px 15px;
+    margin-right: 5px;
+    background: var(--win-gray);
+    font-size: 14px;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* =========================================
+   7. JEUX : POPUP
+   ========================================= */
+#game-area-popup {
+    background-color: white;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    border: 2px inset var(--win-light);
+    overflow: hidden;
+    cursor: default;
+}
+
+.popup {
+    position: absolute;
+    width: 150px;
+    background: var(--win-gray);
+    border: 2px outset var(--win-light);
+    color: black;
+    font-size: 12px;
+    box-shadow: 4px 4px 0 #000;
+    cursor: crosshair;
+}
+
+.popup-header {
+    background: var(--win-blue);
+    color: white;
+    padding: 2px;
+    cursor: pointer;
+}
+
+/* =========================================
+   8. JEUX : TYPER
+   ========================================= */
+.dark-bg {
+    background: black;
+    color: #0f0;
+}
+
+#typer-container {
+    text-align: center;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+#word-display {
+    font-size: 32px;
+    margin: 20px 0;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-shadow: 0 0 10px #0f0;
+}
+
+#typer-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #0f0;
+    color: #0f0;
+    font-size: 24px;
+    text-align: center;
+    outline: none;
+    width: 80%;
+}
+
+#timer-bar {
+    width: 80%;
+    height: 10px;
+    background: #333;
+    margin-top: 20px;
+    border: 1px solid #0f0;
+}
+
+#timer-progress {
+    width: 100%;
+    height: 100%;
+    background: #0f0;
+    transition: width 0.1s linear;
+}
+
+/* =========================================
+   9. JEUX : SNAKE
+   ========================================= */
+#snake-grid {
+    width: 400px;
+    height: 300px;
+    background: white;
+    border: 1px solid #ccc;
+    margin: 10px auto;
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    grid-template-rows: repeat(15, 1fr);
+    border: 2px inset #ccc;
+}
+
+.cell {
+    border: 1px dotted #eee;
+    box-sizing: border-box;
+}
+
+.snake-body {
+    background-color: #217346;
+    border: 1px solid white;
+}
+
+.snake-head {
+    background-color: #1e5c36;
+}
+
+.snake-food {
+    background-color: gold;
+    border-radius: 50%;
+    box-shadow: 1px 1px 2px black;
+}
+
+/* =========================================
+   10. HUD & LEADERBOARD
+   ========================================= */
+.game-hud {
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 5px;
+}
+
+#leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+#leaderboard-list li {
+    padding: 5px 0;
+    border-bottom: 1px dotted black;
+    font-size: 14px;
+}
+
+/* ... Tout ton code précédent ... */
+
+/* AJOUT MULTIPLICATEUR */
+.multiplier {
+    margin-left: 10px;
+    color: red;
+    background: #ffff00;
+    padding: 2px 5px;
+    border: 1px dotted red;
+    font-size: 14px;
+}

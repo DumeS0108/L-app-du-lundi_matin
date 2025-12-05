@@ -27,10 +27,10 @@ app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        // On initialise wallet et total_score à 0, et un inventaire vide
+        // On initialise wallet et total_score à 0
         const sql = `INSERT INTO users (username, password, wallet, total_score, inventory) VALUES (?, ?, 0, 0, '[]')`;
         db.query(sql, [username, hashedPassword], (err, result) => {
-            if (err) return res.status(400).json({ error: "Pseudo déjà pris !" });
+            if (err) return res.status(400).json({ error: "Pseudo pris !" });
             res.json({ id: result.insertId, username });
         });
     } catch (e) { res.status(500).json({ error: "Erreur serveur" }); }
@@ -49,34 +49,28 @@ app.post('/api/login', (req, res) => {
                 id: user.id, 
                 username: user.username,
                 wallet: user.wallet,
+                total_score: user.total_score, // On renvoie le total pour le rang
                 inventory: user.inventory || '[]',
                 equipped_skin: user.equipped_skin,
                 equipped_cursor: user.equipped_cursor
             });
-        } else { res.status(400).json({ error: "Mauvais mot de passe." }); }
+        } else { res.status(400).json({ error: "Mauvais pass." }); }
     });
 });
 
-// 3. Sauvegarde Score (NOUVEAU SYSTÈME OPTIMISÉ)
+// 3. Sauvegarde Score
 app.post('/api/score', (req, res) => {
     const { userId, score } = req.body;
-    
-    // On met à jour directement la ligne de l'utilisateur
-    // wallet = argent à dépenser
-    // total_score = score cumulé à vie pour le classement
     const sql = `UPDATE users SET wallet = wallet + ?, total_score = total_score + ? WHERE id = ?`;
-    
     db.query(sql, [score, score, userId], (err) => {
         if (err) return res.status(500).json({ error: err.message });
-        
-        // On renvoie le nouveau solde pour l'affichage immédiat
-        db.query(`SELECT wallet FROM users WHERE id = ?`, [userId], (err, result) => {
-            res.json({ message: "Sauvegardé", newWallet: result[0].wallet });
+        db.query(`SELECT wallet, total_score FROM users WHERE id = ?`, [userId], (err, result) => {
+            res.json({ message: "Sauvegardé", newWallet: result[0].wallet, newTotal: result[0].total_score });
         });
     });
 });
 
-// 4. Achat Boutique
+// 4. Achat
 app.post('/api/buy', (req, res) => {
     const { userId, itemId, cost } = req.body;
     db.query(`SELECT wallet, inventory FROM users WHERE id = ?`, [userId], (err, results) => {
@@ -98,7 +92,7 @@ app.post('/api/buy', (req, res) => {
     });
 });
 
-// 5. Équiper Skin/Curseur
+// 5. Équiper
 app.post('/api/equip', (req, res) => {
     const { userId, type, itemId } = req.body;
     let column = (type === 'skin') ? 'equipped_skin' : 'equipped_cursor';
@@ -109,13 +103,10 @@ app.post('/api/equip', (req, res) => {
     });
 });
 
-// 6. Classement (OPTIMISÉ)
+// 6. Classement
 app.get('/api/leaderboard', (req, res) => {
-    // On lit juste la colonne total_score, plus besoin de faire des SUM() lourds
     const sql = `SELECT username, total_score FROM users ORDER BY total_score DESC LIMIT 10`;
-    db.query(sql, (err, results) => {
-        res.json(results || []);
-    });
+    db.query(sql, (err, results) => { res.json(results || []); });
 });
 
-app.listen(PORT, '0.0.0.0', () => { console.log(`🚀 Serveur V7.5 démarré sur http://172.29.19.53:${PORT}`); });
+app.listen(PORT, '0.0.0.0', () => { console.log(`🚀 Serveur V8 sur http://172.29.19.53:${PORT}`); });

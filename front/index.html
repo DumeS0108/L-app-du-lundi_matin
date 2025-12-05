@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinOS 95 - Glandeur Simulator</title>
+    <title>WinOS 95 - Glandeur Simulator V8</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -41,44 +41,50 @@
         
         <div id="boss-alert" class="hidden">🚨 PATRON EN APPROCHE ! (ESPACE !) 🚨</div>
 
-        <!-- WIDGET ARGENT -->
+        <!-- WIDGET INFO (V8) -->
         <div class="user-widget">
-            💰 <span id="wallet-display">0</span> €
+            <div id="rank-display">STAGIAIRE</div>
+            <div>💰 <span id="wallet-display">0</span> €</div>
         </div>
 
         <div class="desktop-icons">
-            <div class="icon" onclick="openWindow('popup')">
-                <div class="icon-img">💥</div>
-                <div class="icon-text">Pop-up Panic</div>
-            </div>
-            <div class="icon" onclick="openWindow('typer')">
-                <div class="icon-img">⌨️</div>
-                <div class="icon-text">Corp. Typer</div>
-            </div>
-            <div class="icon" onclick="openWindow('snake')">
-                <div class="icon-img">📊</div>
-                <div class="icon-text">Budget_24.xls</div>
-            </div>
-            <div class="icon" onclick="openWindow('shop')">
-                <div class="icon-img">🛒</div>
-                <div class="icon-text">Boutique</div>
-            </div>
-            <div class="icon" onclick="openWindow('leaderboard')">
-                <div class="icon-img">🏆</div>
-                <div class="icon-text">Glandeurs du mois</div>
-            </div>
-             <div class="icon" onclick="logout()">
-                <div class="icon-img">🚪</div>
-                <div class="icon-text">Fin de journée</div>
+            <div class="icon" onclick="openWindow('popup')"><div class="icon-img">💥</div><div class="icon-text">Pop-up Panic</div></div>
+            <div class="icon" onclick="openWindow('typer')"><div class="icon-img">⌨️</div><div class="icon-text">Corp. Typer</div></div>
+            <div class="icon" onclick="openWindow('snake')"><div class="icon-img">📊</div><div class="icon-text">Budget.xls</div></div>
+            <!-- NOUVEAU : OUTLOOK -->
+            <div class="icon" onclick="openWindow('mail')"><div class="icon-img">📧</div><div class="icon-text">Outlook</div></div>
+            
+            <div class="icon" onclick="openWindow('shop')"><div class="icon-img">🛒</div><div class="icon-text">Boutique</div></div>
+            <div class="icon" onclick="openWindow('leaderboard')"><div class="icon-img">🏆</div><div class="icon-text">Classement</div></div>
+             <div class="icon" onclick="logout()"><div class="icon-img">🚪</div><div class="icon-text">Fin de journée</div></div>
+        </div>
+
+        <!-- FENÊTRE OUTLOOK (NOUVEAU JEU V8) -->
+        <div id="window-mail" class="os-window hidden" style="top: 15%; left: 25%;">
+            <div class="window-header"><span>Outlook_Express.exe</span><button class="close-btn" onclick="closeWindow('mail')">X</button></div>
+            <div class="window-body game-body" style="background: #fff; display:flex; flex-direction:column;">
+                <div class="game-hud" style="color:navy;">Gain: <span id="score-mail">0</span> € <span class="multiplier">x<span id="mult-mail">1.0</span></span></div>
+                
+                <div id="mail-container" style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; padding:10px;">
+                    <div id="mail-content" class="mail-box hidden">
+                        <div class="mail-header">
+                            <b>De:</b> <span id="mail-sender">...</span><br>
+                            <b>Objet:</b> <span id="mail-subject">...</span>
+                        </div>
+                        <div class="mail-body" id="mail-body">...</div>
+                        <div class="mail-actions">
+                            <button class="mail-btn reply" onclick="handleMailAction('reply')">RÉPONDRE 📤</button>
+                            <button class="mail-btn trash" onclick="handleMailAction('trash')">CORBEILLE 🗑️</button>
+                        </div>
+                    </div>
+                    <button id="btn-start-mail" onclick="startMailGame()">LIRE MAILS NON LUS</button>
+                </div>
             </div>
         </div>
 
-        <!-- BOUTIQUE -->
+        <!-- AUTRES FENÊTRES (V7.5) -->
         <div id="window-shop" class="os-window hidden" style="top: 5%; left: 35%; height: 500px;">
-            <div class="window-header">
-                <span>Amazon_Pirate.exe</span>
-                <button class="close-btn" onclick="closeWindow('shop')">X</button>
-            </div>
+            <div class="window-header"><span>Amazon_Pirate.exe</span><button class="close-btn" onclick="closeWindow('shop')">X</button></div>
             <div class="window-body" style="background: white; overflow-y: auto;">
                 <h3>💎 AMÉLIORATIONS & SKINS</h3>
                 <p>Solde actuel : <b id="shop-wallet">0</b> €</p>
@@ -86,28 +92,18 @@
             </div>
         </div>
 
-        <!-- FENÊTRE POP-UP (Mise à jour V7.5) -->
         <div id="window-popup" class="os-window hidden" style="top: 10%; left: 15%;">
             <div class="window-header"><span>Pop-up Panic.exe</span><button class="close-btn" onclick="closeWindow('popup')">X</button></div>
             <div class="window-body game-body">
-                <div class="game-hud">
-                    Gain: <span id="score-popup">0</span> € 
-                    <span class="multiplier">x<span id="mult-popup">1.0</span></span>
-                    <!-- Nouveau : Compteur d'erreurs -->
-                    <span style="float:right; color:red;">Erreurs: <span id="miss-count">0</span>/3</span>
-                </div>
-                
+                <div class="game-hud">Gain: <span id="score-popup">0</span> € <span class="multiplier">x<span id="mult-popup">1.0</span></span> <span style="float:right; color:red;">Erreurs: <span id="miss-count">0</span>/3</span></div>
                 <div id="popup-controls" style="text-align:center; margin-bottom:10px;">
-                    <button id="btn-start-popup" onclick="startPopupGame()">TRAVAILLER (FAUX)</button>
-                    <!-- Nouveau : Bouton pour arrêter et encaisser -->
-                    <button id="btn-stop-popup" class="hidden" onclick="manualStopGame()" style="background:#ffcccb; font-weight:bold;">🛑 ENCAISSER & ARRÊTER</button>
+                    <button id="btn-start-popup" onclick="startPopupGame()">TRAVAILLER</button>
+                    <button id="btn-stop-popup" class="hidden" onclick="manualStopGame()" style="background:#ffcccb; font-weight:bold;">🛑 ENCAISSER</button>
                 </div>
-
                 <div id="game-area-popup"></div>
             </div>
         </div>
 
-        <!-- TYPER -->
         <div id="window-typer" class="os-window hidden" style="top: 15%; left: 20%;">
             <div class="window-header"><span>Word_Simulator.exe</span><button class="close-btn" onclick="closeWindow('typer')">X</button></div>
             <div class="window-body game-body dark-bg">
@@ -121,9 +117,8 @@
             </div>
         </div>
 
-        <!-- SNAKE -->
         <div id="window-snake" class="os-window hidden" style="top: 5%; left: 10%;">
-            <div class="window-header" style="background: #217346;"><span>Excel - Budget.xls</span><button class="close-btn" onclick="closeWindow('snake')">X</button></div>
+            <div class="window-header" style="background: #217346;"><span>Excel.xls</span><button class="close-btn" onclick="closeWindow('snake')">X</button></div>
             <div class="window-body game-body" style="background: #fff;">
                 <div class="game-hud" style="color:#217346;">Gain: <span id="score-snake">0</span> € <span class="multiplier">x<span id="mult-snake">1.0</span></span></div>
                 <button id="btn-start-snake" onclick="startSnakeGame()">CALCULER BUDGET</button>
@@ -131,7 +126,6 @@
             </div>
         </div>
 
-        <!-- CLASSEMENT -->
         <div id="window-leaderboard" class="os-window hidden" style="top: 20%; left: 30%;">
             <div class="window-header"><span>Top_Slackers.txt</span><button class="close-btn" onclick="closeWindow('leaderboard')">X</button></div>
             <div class="window-body"><ul id="leaderboard-list"></ul></div>

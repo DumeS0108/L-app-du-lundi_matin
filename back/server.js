@@ -22,21 +22,21 @@ db.connect((err) => {
 
 // --- ROUTES API ---
 
-// 1. Inscription (Initialise wallet et inventaire vide)
+// 1. Inscription
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        // On donne 0€ et un inventaire vide "[]" au départ
-        const sql = `INSERT INTO users (username, password, wallet, inventory) VALUES (?, ?, 0, '[]')`;
+        // On initialise wallet et total_score à 0, et un inventaire vide
+        const sql = `INSERT INTO users (username, password, wallet, total_score, inventory) VALUES (?, ?, 0, 0, '[]')`;
         db.query(sql, [username, hashedPassword], (err, result) => {
-            if (err) return res.status(400).json({ error: "Pseudo pris !" });
+            if (err) return res.status(400).json({ error: "Pseudo déjà pris !" });
             res.json({ id: result.insertId, username });
         });
     } catch (e) { res.status(500).json({ error: "Erreur serveur" }); }
 });
 
-// 2. Connexion (Renvoie aussi le wallet et l'inventaire)
+// 2. Connexion
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     const sql = `SELECT * FROM users WHERE username = ?`;
@@ -53,36 +53,32 @@ app.post('/api/login', (req, res) => {
                 equipped_skin: user.equipped_skin,
                 equipped_cursor: user.equipped_cursor
             });
-        } else { res.status(400).json({ error: "Mauvais pass." }); }
+        } else { res.status(400).json({ error: "Mauvais mot de passe." }); }
     });
 });
 
-// 3. Sauvegarde Score & Gain d'argent
+// 3. Sauvegarde Score (NOUVEAU SYSTÈME OPTIMISÉ)
 app.post('/api/score', (req, res) => {
     const { userId, score } = req.body;
-    const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
     
-    // 1. On insère le score dans l'historique
-    const sqlScore = `INSERT INTO scores (user_id, score, date) VALUES (?, ?, ?)`;
-    db.query(sqlScore, [userId, score, date]);
-
-    // 2. On ajoute l'argent au wallet de l'utilisateur
-    const sqlWallet = `UPDATE users SET wallet = wallet + ? WHERE id = ?`;
-    db.query(sqlWallet, [score, userId], (err) => {
+    // On met à jour directement la ligne de l'utilisateur
+    // wallet = argent à dépenser
+    // total_score = score cumulé à vie pour le classement
+    const sql = `UPDATE users SET wallet = wallet + ?, total_score = total_score + ? WHERE id = ?`;
+    
+    db.query(sql, [score, score, userId], (err) => {
         if (err) return res.status(500).json({ error: err.message });
         
-        // On renvoie le nouveau solde pour mettre à jour l'interface
+        // On renvoie le nouveau solde pour l'affichage immédiat
         db.query(`SELECT wallet FROM users WHERE id = ?`, [userId], (err, result) => {
             res.json({ message: "Sauvegardé", newWallet: result[0].wallet });
         });
     });
 });
 
-// 4. ACHAT D'ITEM
+// 4. Achat Boutique
 app.post('/api/buy', (req, res) => {
     const { userId, itemId, cost } = req.body;
-
-    // Vérifier l'argent
     db.query(`SELECT wallet, inventory FROM users WHERE id = ?`, [userId], (err, results) => {
         if (err) return res.status(500).json({ error: "Erreur DB" });
         const user = results[0];
@@ -91,7 +87,6 @@ app.post('/api/buy', (req, res) => {
         if (user.wallet < cost) return res.status(400).json({ error: "Pas assez d'argent !" });
         if (inventory.includes(itemId)) return res.status(400).json({ error: "Déjà acheté !" });
 
-        // Débiter et ajouter à l'inventaire
         const newWallet = user.wallet - cost;
         inventory.push(itemId);
         
@@ -103,25 +98,24 @@ app.post('/api/buy', (req, res) => {
     });
 });
 
-// 5. ÉQUIPER ITEM
+// 5. Équiper Skin/Curseur
 app.post('/api/equip', (req, res) => {
-    const { userId, type, itemId } = req.body; // type = 'skin' ou 'cursor'
-    
+    const { userId, type, itemId } = req.body;
     let column = (type === 'skin') ? 'equipped_skin' : 'equipped_cursor';
     const sql = `UPDATE users SET ${column} = ? WHERE id = ?`;
-    
     db.query(sql, [itemId, userId], (err) => {
         if (err) return res.status(500).json({ error: "Erreur équipement" });
         res.json({ success: true });
     });
 });
 
-// 6. Classement (inchangé)
+// 6. Classement (OPTIMISÉ)
 app.get('/api/leaderboard', (req, res) => {
-    const sql = `SELECT users.username, SUM(scores.score) as total_score FROM scores JOIN users ON scores.user_id = users.id GROUP BY users.id ORDER BY total_score DESC LIMIT 10`;
+    // On lit juste la colonne total_score, plus besoin de faire des SUM() lourds
+    const sql = `SELECT username, total_score FROM users ORDER BY total_score DESC LIMIT 10`;
     db.query(sql, (err, results) => {
         res.json(results || []);
     });
 });
 
-app.listen(PORT, '0.0.0.0', () => { console.log(`🚀 Serveur V7 sur http://172.29.19.53:${PORT}`); });
+app.listen(PORT, '0.0.0.0', () => { console.log(`🚀 Serveur V7.5 démarré sur http://172.29.19.53:${PORT}`); });

@@ -25,7 +25,7 @@
         </div>
     </section>
 
-    <!-- BOSS SCREEN (Ecran de camouflage) -->
+    <!-- BOSS SCREEN -->
     <div id="boss-screen" class="hidden">
         <div class="update-box">
             <h2>Mise à jour de Windows...</h2>
@@ -41,7 +41,7 @@
         
         <div id="boss-alert" class="hidden">🚨 PATRON EN APPROCHE ! (ESPACE !) 🚨</div>
 
-        <!-- INFO UTILISATEUR (Wallet) -->
+        <!-- WIDGET ARGENT -->
         <div class="user-widget">
             💰 <span id="wallet-display">0</span> €
         </div>
@@ -59,7 +59,6 @@
                 <div class="icon-img">📊</div>
                 <div class="icon-text">Budget_24.xls</div>
             </div>
-            <!-- NOUVEAU : Icone Boutique -->
             <div class="icon" onclick="openWindow('shop')">
                 <div class="icon-img">🛒</div>
                 <div class="icon-text">Boutique</div>
@@ -74,7 +73,7 @@
             </div>
         </div>
 
-        <!-- FENÊTRE BOUTIQUE (NOUVEAU) -->
+        <!-- BOUTIQUE -->
         <div id="window-shop" class="os-window hidden" style="top: 5%; left: 35%; height: 500px;">
             <div class="window-header">
                 <span>Amazon_Pirate.exe</span>
@@ -83,33 +82,36 @@
             <div class="window-body" style="background: white; overflow-y: auto;">
                 <h3>💎 AMÉLIORATIONS & SKINS</h3>
                 <p>Solde actuel : <b id="shop-wallet">0</b> €</p>
-                <div id="shop-items" class="shop-grid">
-                    <!-- Les items seront générés par JS -->
-                </div>
+                <div id="shop-items" class="shop-grid"></div>
             </div>
         </div>
 
-        <!-- FENÊTRE 1 : POP-UP PANIC -->
+        <!-- FENÊTRE POP-UP (Mise à jour V7.5) -->
         <div id="window-popup" class="os-window hidden" style="top: 10%; left: 15%;">
             <div class="window-header"><span>Pop-up Panic.exe</span><button class="close-btn" onclick="closeWindow('popup')">X</button></div>
             <div class="window-body game-body">
                 <div class="game-hud">
-                    Salaire: <span id="score-popup">0</span> € 
+                    Gain: <span id="score-popup">0</span> € 
                     <span class="multiplier">x<span id="mult-popup">1.0</span></span>
+                    <!-- Nouveau : Compteur d'erreurs -->
+                    <span style="float:right; color:red;">Erreurs: <span id="miss-count">0</span>/3</span>
                 </div>
-                <button id="btn-start-popup" onclick="startPopupGame()">TRAVAILLER (FAUX)</button>
+                
+                <div id="popup-controls" style="text-align:center; margin-bottom:10px;">
+                    <button id="btn-start-popup" onclick="startPopupGame()">TRAVAILLER (FAUX)</button>
+                    <!-- Nouveau : Bouton pour arrêter et encaisser -->
+                    <button id="btn-stop-popup" class="hidden" onclick="manualStopGame()" style="background:#ffcccb; font-weight:bold;">🛑 ENCAISSER & ARRÊTER</button>
+                </div>
+
                 <div id="game-area-popup"></div>
             </div>
         </div>
 
-        <!-- FENÊTRE 2 : CORPORATE TYPER -->
+        <!-- TYPER -->
         <div id="window-typer" class="os-window hidden" style="top: 15%; left: 20%;">
             <div class="window-header"><span>Word_Simulator.exe</span><button class="close-btn" onclick="closeWindow('typer')">X</button></div>
             <div class="window-body game-body dark-bg">
-                <div class="game-hud">
-                    Salaire: <span id="score-typer">0</span> €
-                    <span class="multiplier">x<span id="mult-typer">1.0</span></span>
-                </div>
+                <div class="game-hud">Gain: <span id="score-typer">0</span> € <span class="multiplier">x<span id="mult-typer">1.0</span></span></div>
                 <div id="typer-container">
                     <p id="word-display">PRÊT ?</p>
                     <button id="btn-start-typer" onclick="startTyperGame()">TAPER RAPPORT</button>
@@ -119,25 +121,20 @@
             </div>
         </div>
 
-        <!-- FENÊTRE 3 : EXCEL SNAKE -->
+        <!-- SNAKE -->
         <div id="window-snake" class="os-window hidden" style="top: 5%; left: 10%;">
             <div class="window-header" style="background: #217346;"><span>Excel - Budget.xls</span><button class="close-btn" onclick="closeWindow('snake')">X</button></div>
             <div class="window-body game-body" style="background: #fff;">
-                <div class="game-hud" style="color:#217346;">
-                    Salaire: <span id="score-snake">0</span> €
-                    <span class="multiplier">x<span id="mult-snake">1.0</span></span>
-                </div>
+                <div class="game-hud" style="color:#217346;">Gain: <span id="score-snake">0</span> € <span class="multiplier">x<span id="mult-snake">1.0</span></span></div>
                 <button id="btn-start-snake" onclick="startSnakeGame()">CALCULER BUDGET</button>
                 <div id="snake-grid"></div>
             </div>
         </div>
 
-        <!-- FENÊTRE CLASSEMENT -->
+        <!-- CLASSEMENT -->
         <div id="window-leaderboard" class="os-window hidden" style="top: 20%; left: 30%;">
             <div class="window-header"><span>Top_Slackers.txt</span><button class="close-btn" onclick="closeWindow('leaderboard')">X</button></div>
-            <div class="window-body">
-                <ul id="leaderboard-list">Chargement...</ul>
-            </div>
+            <div class="window-body"><ul id="leaderboard-list"></ul></div>
         </div>
 
         <div class="taskbar">

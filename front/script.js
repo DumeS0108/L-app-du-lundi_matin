@@ -15,7 +15,7 @@ const SHOP_ITEMS = [
 // --- VARIABLES ---
 let currentUser = null;
 let currentWallet = 0;
-let userInventory = []; // Liste des IDs possédés
+let userInventory = []; 
 let currentGame = null; 
 let score = 0;
 let multiplier = 1;
@@ -26,6 +26,7 @@ let bossTimer;
 let safeTimer;
 let isBossMode = false;
 let isSafeToReturn = false;
+let missClicks = 0; // ✅ Ajout V7.5 : Compteur d'erreurs
 
 // --- CLOCK ---
 setInterval(() => {
@@ -153,9 +154,9 @@ function applyCosmetics(skin, cursor) {
     }
 }
 
-// --- MÉCANIQUE PATRON (BOSS KEY) AMÉLIORÉE ---
+// --- BOSS MECHANIC ---
 function startBossMechanic() {
-    let minTime = 1600;
+    let minTime = 8000;
     // Powerup Oreilles Bioniques : Patron vient moins souvent
     if(userInventory.includes('power_ears')) minTime = 15000;
 
@@ -240,7 +241,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// --- WINDOW MANAGER (CORRIGÉ) ---
+// --- WINDOW MANAGER ---
 function openWindow(appId) {
     document.querySelectorAll('.os-window').forEach(el => el.style.zIndex = 10);
     const win = document.getElementById(`window-${appId}`);
@@ -266,8 +267,11 @@ function stopGameLogic() {
     // Reset UI
     document.getElementById('btn-start-snake').classList.remove('hidden');
     document.getElementById('snake-grid').innerHTML = '';
+    
     document.getElementById('btn-start-popup').classList.remove('hidden');
+    document.getElementById('btn-stop-popup').classList.add('hidden'); // Cacher le bouton stop
     document.getElementById('game-area-popup').innerHTML = '';
+    
     document.getElementById('btn-start-typer').classList.remove('hidden');
     document.getElementById('typer-input').disabled = true;
     document.getElementById('typer-input').value = '';
@@ -300,13 +304,39 @@ function updateScoreDisplay(id) {
     document.getElementById(`mult-${id}`).innerText = multiplier.toFixed(1);
 }
 
-// --- JEU 1: POPUP ---
+// --- JEU 1: POPUP PANIC (Avec Clics ratés & Bouton Stop) ---
 function startPopupGame() {
-    gameActive = true; score = 0; multiplier = 0.5;
-    currentGame = 'popup';
+    gameActive = true; score = 0; multiplier = 0.5; // (Ta valeur personnalisée)
+    currentGame = 'popup'; missClicks = 0;
+    
+    document.getElementById('miss-count').innerText = "0";
     updateScoreDisplay('popup');
+    
     document.getElementById('btn-start-popup').classList.add('hidden');
-    document.getElementById('game-area-popup').innerHTML = '';
+    document.getElementById('btn-stop-popup').classList.remove('hidden'); // Affiche bouton stop
+    
+    // RESET ZONES DE CLIC
+    const area = document.getElementById('game-area-popup');
+    area.innerHTML = '';
+    const newArea = area.cloneNode(true);
+    area.parentNode.replaceChild(newArea, area);
+    
+    // GESTION CLICS RATÉS
+    newArea.onclick = (e) => {
+        if(isPaused || !gameActive) return;
+        // Si on clique sur le fond (pas sur une popup)
+        if(e.target.id === 'game-area-popup') {
+            missClicks++;
+            document.getElementById('miss-count').innerText = missClicks;
+            multiplier = 0.5; // Reset multi à ta valeur de base
+            updateScoreDisplay('popup');
+            newArea.style.backgroundColor = "#ffcccc"; // Flash rouge
+            setTimeout(()=>newArea.style.backgroundColor="white", 100);
+            
+            if(missClicks >= 3) gameOver("3 ERREURS DE CLIC !");
+        }
+    };
+
     popupLoop(2000);
 }
 
@@ -321,10 +351,11 @@ function popupLoop(speed) {
     p.style.top = Math.floor(Math.random()*(area.clientHeight-80))+'px';
     const texts = ["URGENT", "Réunion", "Café ?", "Erreur", "Boss"];
     p.innerHTML = `<div class="popup-header">Alerte</div><div style="padding:5px;">${texts[Math.floor(Math.random()*texts.length)]}</div>`;
-    p.onmousedown = () => { 
+    
+    p.onmousedown = (e) => { 
+        e.stopPropagation(); // Empêche le clic de passer au fond
         if(gameActive && !isPaused) { 
             p.remove(); 
-            // ✅ Multiplicateur augmente doucement
             multiplier += 0.1;
             score += 10 * multiplier; 
             updateScoreDisplay('popup');
@@ -336,7 +367,12 @@ function popupLoop(speed) {
     else gameInterval = setTimeout(() => popupLoop(Math.max(500, speed-50)), speed);
 }
 
-// --- JEU 2: TYPER ---
+// Fonction pour arrêt manuel
+function manualStopGame() {
+    gameOver("PAUSE CAFÉ (Arrêt volontaire)");
+}
+
+// --- JEU 2: TYPER (Avec ta liste de mots) ---
 const WORDS = [
   "CODE","BRIEF","CLIENT","API","TEAM","DEV","MERGE","TICKET","BUG","PLAN","SLA",
   "DEPLOY","TASK","BOARD","STANDUP","SPRINT","OFFICE","SERVER","REVIEW","PATCH",
@@ -372,7 +408,7 @@ const WORDS = [
   "DELIBERATION","COORDINATION","SUIVI","GANTT","TABLEUR","DOSSIER","ORGANISATION"
 ];
 
-let currentWord="", timer=100;
+let curWord="", timer=100;
 
 function startTyperGame() {
     gameActive=true; score=0; timer=100; multiplier = 1.0;
@@ -387,20 +423,17 @@ function startTyperGame() {
         if(!gameActive || isPaused) return;
         timer-=1.5; 
         document.getElementById('timer-progress').style.width=timer+'%';
-        if(timer<=0) gameOver("Trop lent !");
+        if(timer<=0) gameOver("TROP LENT !");
     }, 100);
 
     input.oninput = () => {
         if(isPaused) return;
-        if(input.value.toUpperCase()===currentWord) {
-            // ✅ Multiplicateur augmente à chaque mot
+        if(input.value.toUpperCase()===curWord) {
             multiplier += 0.2;
             score += 100 * multiplier; 
             updateScoreDisplay('typer');
-            
             timer=Math.min(timer+25, 100); input.value=""; nextWord();
-        } else if (input.value.length > 0 && !currentWord.startsWith(input.value.toUpperCase())) {
-            // ❌ Erreur de frappe = Perte de combo
+        } else if (input.value.length > 0 && !curWord.startsWith(input.value.toUpperCase())) {
             multiplier = 1.0;
             updateScoreDisplay('typer');
             input.style.borderColor = "red";
@@ -408,7 +441,7 @@ function startTyperGame() {
         }
     };
 }
-function nextWord() { currentWord=WORDS[Math.floor(Math.random()*WORDS.length)]; document.getElementById('word-display').innerText=currentWord; }
+function nextWord() { curWord=WORDS[Math.floor(Math.random()*WORDS.length)]; document.getElementById('word-display').innerText=curWord; }
 
 // --- JEU 3: SNAKE EXCEL ---
 let snake=[], direction='right', food={x:0, y:0};
@@ -420,7 +453,7 @@ function startSnakeGame() {
     updateScoreDisplay('snake');
     document.getElementById('btn-start-snake').classList.add('hidden');
     spawnFood();
-    // Powerup Caféine : Snake va à 200ms au lieu de 150ms
+    
     let speed = userInventory.includes('power_coffee') ? 200 : 150;
     gameInterval = setInterval(snakeLoop, speed);
     document.addEventListener('keydown', changeDirection);
@@ -448,9 +481,8 @@ function snakeLoop() {
 
     snake.unshift(head);
     if(head.x===food.x && head.y===food.y) {
-        // ✅ Multiplicateur Serpent
         multiplier += 0.1;
-        score += 75 * multiplier;
+        score += 75 * multiplier; // (Ta valeur personnalisée)
         updateScoreDisplay('snake');
         spawnFood();
     } else {
@@ -479,16 +511,17 @@ function drawSnake() {
 // --- GLOBAL GAME OVER ---
 async function gameOver(reason) {
     stopGameLogic();
-    alert(`❌ FINI : ${reason}\n💰 Salaire volé : ${Math.floor(score)} €`);
+    const finalScore = Math.floor(score);
+    alert(`❌ FINI : ${reason}\n💰 Gain : ${finalScore} €`);
     
     try {
-        await fetch(`${API_URL}/score`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: currentUser.id, score: Math.floor(score) }) });
+        const res = await fetch(`${API_URL}/score`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: currentUser.id, score: finalScore }) });
+        const data = await res.json();
         
-        // Mettre à jour le portefeuille localement après la fin du jeu si possible
-        // (Idéalement le backend renvoie le nouveau solde, sinon on ajoute localement)
-        currentWallet += Math.floor(score);
-        updateWalletDisplay();
-
+        if(data.newWallet) {
+            currentWallet = data.newWallet;
+            updateWalletDisplay();
+        }
     } catch(e) {}
     
     openWindow('leaderboard');

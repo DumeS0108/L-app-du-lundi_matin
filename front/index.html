@@ -8,6 +8,7 @@
 </head>
 <body>
 
+    <!-- LOGIN -->
     <section id="login-screen" class="full-overlay">
         <div class="window login-window">
             <div class="window-header"><span>🔑 Authentification Réseau</span></div>
@@ -24,6 +25,7 @@
         </div>
     </section>
 
+    <!-- BOSS SCREEN (Ecran de camouflage) -->
     <div id="boss-screen" class="hidden">
         <div class="update-box">
             <h2>Mise à jour de Windows...</h2>
@@ -34,9 +36,15 @@
         </div>
     </div>
 
+    <!-- BUREAU -->
     <section id="desktop-screen" class="hidden">
         
         <div id="boss-alert" class="hidden">🚨 PATRON EN APPROCHE ! (ESPACE !) 🚨</div>
+
+        <!-- INFO UTILISATEUR (Wallet) -->
+        <div class="user-widget">
+            💰 <span id="wallet-display">0</span> €
+        </div>
 
         <div class="desktop-icons">
             <div class="icon" onclick="openWindow('popup')">
@@ -51,6 +59,11 @@
                 <div class="icon-img">📊</div>
                 <div class="icon-text">Budget_24.xls</div>
             </div>
+            <!-- NOUVEAU : Icone Boutique -->
+            <div class="icon" onclick="openWindow('shop')">
+                <div class="icon-img">🛒</div>
+                <div class="icon-text">Boutique</div>
+            </div>
             <div class="icon" onclick="openWindow('leaderboard')">
                 <div class="icon-img">🏆</div>
                 <div class="icon-text">Glandeurs du mois</div>
@@ -61,6 +74,22 @@
             </div>
         </div>
 
+        <!-- FENÊTRE BOUTIQUE (NOUVEAU) -->
+        <div id="window-shop" class="os-window hidden" style="top: 5%; left: 35%; height: 500px;">
+            <div class="window-header">
+                <span>Amazon_Pirate.exe</span>
+                <button class="close-btn" onclick="closeWindow('shop')">X</button>
+            </div>
+            <div class="window-body" style="background: white; overflow-y: auto;">
+                <h3>💎 AMÉLIORATIONS & SKINS</h3>
+                <p>Solde actuel : <b id="shop-wallet">0</b> €</p>
+                <div id="shop-items" class="shop-grid">
+                    <!-- Les items seront générés par JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- FENÊTRE 1 : POP-UP PANIC -->
         <div id="window-popup" class="os-window hidden" style="top: 10%; left: 15%;">
             <div class="window-header"><span>Pop-up Panic.exe</span><button class="close-btn" onclick="closeWindow('popup')">X</button></div>
             <div class="window-body game-body">
@@ -73,6 +102,7 @@
             </div>
         </div>
 
+        <!-- FENÊTRE 2 : CORPORATE TYPER -->
         <div id="window-typer" class="os-window hidden" style="top: 15%; left: 20%;">
             <div class="window-header"><span>Word_Simulator.exe</span><button class="close-btn" onclick="closeWindow('typer')">X</button></div>
             <div class="window-body game-body dark-bg">
@@ -89,6 +119,7 @@
             </div>
         </div>
 
+        <!-- FENÊTRE 3 : EXCEL SNAKE -->
         <div id="window-snake" class="os-window hidden" style="top: 5%; left: 10%;">
             <div class="window-header" style="background: #217346;"><span>Excel - Budget.xls</span><button class="close-btn" onclick="closeWindow('snake')">X</button></div>
             <div class="window-body game-body" style="background: #fff;">
@@ -101,6 +132,7 @@
             </div>
         </div>
 
+        <!-- FENÊTRE CLASSEMENT -->
         <div id="window-leaderboard" class="os-window hidden" style="top: 20%; left: 30%;">
             <div class="window-header"><span>Top_Slackers.txt</span><button class="close-btn" onclick="closeWindow('leaderboard')">X</button></div>
             <div class="window-body">

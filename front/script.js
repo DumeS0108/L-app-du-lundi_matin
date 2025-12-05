@@ -1,18 +1,31 @@
 // 👇 CONFIGURATION DU PORT
 const API_URL = "http://172.29.19.53:3001/api";
 
+// --- DATA BOUTIQUE ---
+const SHOP_ITEMS = [
+    { id: 'skin_matrix', name: 'Fond d\'écran Matrix', type: 'skin', price: 2000, desc: 'Soyez l\'élu.' },
+    { id: 'skin_xp', name: 'Windows XP Bliss', type: 'skin', price: 1500, desc: 'Nostalgie pure.' },
+    { id: 'skin_pink', name: 'Vaporwave Pink', type: 'skin', price: 1000, desc: 'Aesthetic.' },
+    { id: 'cursor_pizza', name: 'Curseur Pizza', type: 'cursor', price: 800, desc: 'Miam.' },
+    { id: 'cursor_gold', name: 'Curseur Rebelle', type: 'cursor', price: 3000, desc: 'Un beau doigt.' },
+    { id: 'power_coffee', name: 'Caféine (Snake)', type: 'powerup', price: 5000, desc: 'Snake va moins vite (-20%).' },
+    { id: 'power_ears', name: 'Oreille Bionique', type: 'powerup', price: 5000, desc: 'Boss détecté + tôt.' }
+];
+
 // --- VARIABLES ---
 let currentUser = null;
+let currentWallet = 0;
+let userInventory = []; // Liste des IDs possédés
 let currentGame = null; 
 let score = 0;
-let multiplier = 1; // ✅ Nouveau : Le multiplicateur
+let multiplier = 1;
 let gameActive = false;
 let isPaused = false;
 let gameInterval;
 let bossTimer;
-let safeTimer; // Pour savoir quand le patron part
+let safeTimer;
 let isBossMode = false;
-let isSafeToReturn = false; // ✅ Pour savoir si on peut revenir
+let isSafeToReturn = false;
 
 // --- CLOCK ---
 setInterval(() => {
@@ -27,8 +40,14 @@ async function login() {
     try {
         const res = await fetch(`${API_URL}/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
         const data = await res.json();
-        if(res.ok) { currentUser = data; startOS(); }
-        else document.getElementById('auth-message').innerText = "❌ " + data.error;
+        if(res.ok) { 
+            currentUser = data; 
+            currentWallet = data.wallet;
+            userInventory = JSON.parse(data.inventory);
+            startOS(data.equipped_skin, data.equipped_cursor); 
+        } else {
+            document.getElementById('auth-message').innerText = "❌ " + data.error;
+        }
     } catch(e) { alert("Erreur connexion 3001"); }
 }
 
@@ -41,20 +60,106 @@ async function register() {
     } catch(e) { alert("Erreur serveur"); }
 }
 
-function startOS() {
+function startOS(skin, cursor) {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('desktop-screen').classList.remove('hidden');
     document.getElementById('display-username').innerText = currentUser.username;
+    
+    updateWalletDisplay();
+    applyCosmetics(skin, cursor);
     initDraggableWindows();
     startBossMechanic(); 
 }
 
 function logout() { location.reload(); }
 
+function updateWalletDisplay() {
+    document.getElementById('wallet-display').innerText = currentWallet;
+    document.getElementById('shop-wallet').innerText = currentWallet;
+}
+
+// --- BOUTIQUE LOGIC ---
+function renderShop() {
+    const grid = document.getElementById('shop-items');
+    grid.innerHTML = '';
+    
+    SHOP_ITEMS.forEach(item => {
+        const owned = userInventory.includes(item.id);
+        const div = document.createElement('div');
+        div.className = `shop-item ${owned ? 'owned' : ''}`;
+        
+        let btnHtml = '';
+        if (owned) {
+            if(item.type !== 'powerup') {
+                btnHtml = `<button class="shop-btn" onclick="equipItem('${item.type}', '${item.id}')">ÉQUIPER</button>`;
+            } else {
+                btnHtml = `<button class="shop-btn" disabled>ACTIF</button>`;
+            }
+        } else {
+            btnHtml = `<button class="shop-btn" onclick="buyItem('${item.id}', ${item.price})">ACHETER (${item.price}€)</button>`;
+        }
+
+        div.innerHTML = `
+            <h4>${item.name}</h4>
+            <p>${item.desc}</p>
+            ${btnHtml}
+        `;
+        grid.appendChild(div);
+    });
+}
+
+async function buyItem(itemId, price) {
+    if(currentWallet < price) return alert("Pas assez d'argent !");
+    
+    try {
+        const res = await fetch(`${API_URL}/buy`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ userId: currentUser.id, itemId, cost: price })
+        });
+        const data = await res.json();
+        if(data.success) {
+            currentWallet = data.newWallet;
+            userInventory = data.inventory;
+            updateWalletDisplay();
+            renderShop(); // Refresh boutons
+            alert("Acheté !");
+        }
+    } catch(e) { alert("Erreur achat"); }
+}
+
+async function equipItem(type, itemId) {
+    try {
+        await fetch(`${API_URL}/equip`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ userId: currentUser.id, type, itemId })
+        });
+        // Appliquer immédiatement
+        if(type === 'skin') applyCosmetics(itemId, null);
+        if(type === 'cursor') applyCosmetics(null, itemId);
+        alert("Équipé !");
+    } catch(e) {}
+}
+
+function applyCosmetics(skin, cursor) {
+    if(skin) {
+        document.body.className = document.body.className.replace(/bg-\w+/g, ""); // Remove old bg
+        document.body.classList.add(skin.replace('skin_', 'bg-'));
+        if(skin === 'default') document.body.classList.add('bg-default');
+    }
+    if(cursor) {
+        document.body.className = document.body.className.replace(/cursor-\w+/g, ""); // Remove old cursor
+        document.body.classList.add(cursor);
+        if(cursor === 'default') document.body.classList.add('cursor-default');
+    }
+}
+
 // --- MÉCANIQUE PATRON (BOSS KEY) AMÉLIORÉE ---
 function startBossMechanic() {
-    // Aléatoire plus varié : entre 8s et 40s
-    const randomTime = Math.random() * 32000 + 8000; 
+    let minTime = 1600;
+    // Powerup Oreilles Bioniques : Patron vient moins souvent
+    if(userInventory.includes('power_ears')) minTime = 15000;
+
+    const randomTime = Math.random() * 32000 + minTime; 
     bossTimer = setTimeout(triggerBossAlert, randomTime);
 }
 
@@ -64,8 +169,8 @@ function triggerBossAlert() {
     const alertBox = document.getElementById('boss-alert');
     alertBox.classList.remove('hidden');
     
-    // Temps de réaction aléatoire (entre 2s et 4s pour réagir)
-    let reactionTime = Math.random() * 2000 + 2000;
+    // Temps de réaction (augmenté si powerup)
+    let reactionTime = userInventory.includes('power_ears') ? 5000 : 3000;
     
     const failTimer = setTimeout(() => {
         if(!isBossMode) { 
@@ -95,7 +200,7 @@ function toggleBossScreen(show) {
         // --- ON SE CACHE ---
         isBossMode = true;
         isPaused = true; 
-        isSafeToReturn = false; // ❌ DANGER
+        isSafeToReturn = false; 
         
         screen.classList.remove('hidden');
         alertBox.classList.add('hidden');
@@ -104,11 +209,10 @@ function toggleBossScreen(show) {
         safeText.innerText = "⛔ NE REVENEZ PAS TOUT DE SUITE !";
         safeText.style.color = "red";
 
-        // Le patron reste entre 3 et 8 secondes devant l'écran
         const waitTime = Math.random() * 5000 + 3000;
         
         safeTimer = setTimeout(() => {
-            isSafeToReturn = true; // ✅ C'EST BON
+            isSafeToReturn = true; 
             statusText.innerText = "Installation : 12% (Le patron est parti à la machine à café)";
             safeText.innerText = "✅ VOUS POUVEZ REPRENDRE (ESPACE)";
             safeText.style.color = "#0f0";
@@ -117,13 +221,11 @@ function toggleBossScreen(show) {
     } else {
         // --- ON TENTE DE REVENIR ---
         if(!isSafeToReturn) {
-            // 💀 REVENU TROP TÔT
             screen.classList.add('hidden');
             gameOver("TU ES REVENU TROP TÔT ! Le patron était encore là !");
             return;
         }
 
-        // Tout est bon, on reprend
         isBossMode = false;
         isPaused = false; 
         screen.classList.add('hidden');
@@ -144,14 +246,11 @@ function openWindow(appId) {
     const win = document.getElementById(`window-${appId}`);
     if(win) { win.classList.remove('hidden'); win.style.zIndex = 20; }
     if(appId === 'leaderboard') loadLeaderboard();
+    if(appId === 'shop') renderShop(); // Charger la boutique
 }
 
-// ✅ CORRECTION : Fermeture spécifique
 function closeWindow(appId) {
-    // Cache la fenêtre
     document.getElementById(`window-${appId}`).classList.add('hidden');
-    
-    // Si c'était le jeu actif, on arrête le jeu
     if (currentGame === appId) {
         stopGameLogic();
     }
@@ -180,7 +279,7 @@ function initDraggableWindows() {
         const header = win.querySelector('.window-header');
         let isDragging = false, startX, startY, initL, initT;
         header.onmousedown = (e) => {
-            if(e.target.tagName === 'BUTTON') return; // Ignore si on clique sur X
+            if(e.target.tagName === 'BUTTON') return; 
             e.preventDefault();
             document.querySelectorAll('.os-window').forEach(el => el.style.zIndex = 10);
             win.style.zIndex = 20;
@@ -197,14 +296,13 @@ function initDraggableWindows() {
 }
 
 function updateScoreDisplay(id) {
-    // Affiche Score et Multiplicateur
     document.getElementById(`score-${id}`).innerText = Math.floor(score);
     document.getElementById(`mult-${id}`).innerText = multiplier.toFixed(1);
 }
 
 // --- JEU 1: POPUP ---
 function startPopupGame() {
-    gameActive = true; score = 0; multiplier = 1.0;
+    gameActive = true; score = 0; multiplier = 0.5;
     currentGame = 'popup';
     updateScoreDisplay('popup');
     document.getElementById('btn-start-popup').classList.add('hidden');
@@ -228,7 +326,7 @@ function popupLoop(speed) {
             p.remove(); 
             // ✅ Multiplicateur augmente doucement
             multiplier += 0.1;
-            score += 50 * multiplier; 
+            score += 10 * multiplier; 
             updateScoreDisplay('popup');
         }
     };
@@ -239,7 +337,52 @@ function popupLoop(speed) {
 }
 
 // --- JEU 2: TYPER ---
-const WORDS = ["SYNERGIE", "PROCESS", "DEADLINE", "ASAP", "CLIENT", "BUDGET", "KPI", "RUSH", "TEAM", "ZOOM", "PROJET"];
+const WORDS = [
+  "SYNERGIE","PROCESS","DEADLINE","ASAP","CLIENT","BUDGET","KPI","RUSH","TEAM","ZOOM","PROJET",
+  "STRATÉGIE","ROADMAP","SCOPE","MEETING","WORKFLOW","PIPELINE","VALIDATION","BRIEF","PLANNING",
+  "RETEX","PIVOT","SQUAD","SPRINT","BACKLOG","SCRUM","KANBAN","DELIVERY","RELEASE","ONBOARDING",
+  "FEEDBACK","INNOVATION","OPTIMISATION","BENCHMARK","AUDIT","PERFORMANCE","SEGMENTATION",
+  "CIBLE","CAMPAGNE","MARKETING","BRANDING","POSITIONNEMENT","GROWTH","FUNNEL","AUTOMATION",
+  "CONVERSION","RETENTION","ACTIVATION","TRACKING","ANALYTICS","INSIGHTS","REPORTING",
+  "DASHBOARD","ALGORITHME","DATA","FEATURE","PRIORISATION","ESTIMATION","PROTOTYPE","WIREFRAME",
+  "MAQUETTE","UI","UX","RESEARCH","DOCUMENTATION","VERSIONING","GIT","MODULE","COMPONENT",
+  "LIBRAIRIE","FRAMEWORK","BACKEND","FRONTEND","FULLSTACK","ENDPOINT","API","REQUEST","RESPONSE",
+  "DATABASE","QUERY","SCHEMA","MODEL","DEPLOYMENT","CONTAINER","DOCKER","CLOUD","SERVEUR",
+  "LATENCE","BANDWIDTH","OPTIMISATION","CACHE","LOADBALANCING","SECURITE","AUTHENTIFICATION",
+  "TOKEN","CHIFFREMENT","PRODUCTION","STAGING","DEBUG","LOGS","MONITORING","ALERTE","INCIDENT",
+  "HOTFIX","PATCH","MAINTENANCE","SCALABILITY","REDONDANCE","ARCHITECTURE","MICROSERVICES",
+  "CLUSTER","FAILOVER","MIGRATION","COMPATIBILITE","PERMISSIONS","BACKUP","RESTORE",
+  "SYNCHRONISATION","INTEGRATION","TESTS","UNITAIRES","E2E","MOCK","BUILD","PIPELINE",
+  "CICD","ROLLBACK","VALIDATION","HOMOLOGATION","SPECIFICATIONS","USECASE","STORY","EPIC",
+  "ROADBLOCK","RISQUE","OPPORTUNITÉ","STRATEGIC","ALIGNEMENT","OBJECTIFS","PRISEDEDÉCISION",
+  "WORKSHOP","BRAINSTORM","IDEATION","MINDMAP","RETROSPECTIVE","POSTMORTEM","AMÉLIORATION",
+  "QUALITÉ","CERTIFICATION","CONTRAT","PRESTATAIRE","FOURNISSEUR","PARTENAIRE","NEGOCIATION",
+  "DÉPLOIEMENT","APPROBATION","ARCHIVAGE","PRIORITÉ","CONFORMITÉ","LEGAL","COPYRIGHT",
+  "BREVET","LICENCE","MENTIONS","RGPD","CONFIDENTIALITÉ","ACCORD","SUIVI","RELANCE",
+  "COMMUNICATION","INFORMATION","INSTRUCTION","STATUT","PUBLICATION","VERSION","ALPHA","BETA",
+  "PRODUCTION","STABILISATION","INTEGRITÉ","COORDINATION","SUPPORT","ASSISTANCE","MESSAGERIE",
+  "TICKETS","REQUÊTE","ESCALADE","SLA","WORKLOAD","CAPACITÉ","RÉPARTITION","PLATEFORME",
+  "HÉBERGEMENT","VIRTUALISATION","INFRASTRUCTURE","DATACENTER","PROXY","FIREWALL",
+  "CONFIGURATION","PARAMÈTRES","COMPATIBILITÉ","OPTIMAL","RÉGRESSION","PERFORMANCE",
+  "CHARGE","STRESS","BENCHMARKING","ESTIMATION","PROJECTION","PLANIFICATION","CHANTIER",
+  "AVANCEMENT","MILESTONE","ROADBLOCK","FOLLOWUP","LEAD","PIPELINE","PROSPECTION","CLOSING",
+  "NURTURING","SEGMENT","PERSONA","BRIEFING","COLLABORATION","DELIVERABLE","OBJECTIF",
+  "RETARD","URGENCE","PRIORISATION","FLUX","TABLEUR","DÉRIVE","RÉUNION","DÉLIBÉRATION",
+  "CALENDRIER","SCHEDULING","TIMELINE","FORECAST","STRATEGY","VALIDATION","CROSSFUNCTIONAL",
+  "BOOTSTRAP","STARTUP","PITCH","INVESTISSEUR","LEVÉEDEFONDS","ROADSHOW","SCALER",
+  "MÉTRIQUES","RENTABILITÉ","ROI","ROAS","CAC","LTV","MRR","ARR","CHURN","PIPE","RUNWAY",
+  "VISION","MISSION","VALEUR","CULTURE","LEADERSHIP","MANAGEMENT","COACHING","MENTORING",
+"AGILE","WATERFALL","PROCESSUS","INDICATEUR","OPTIMISATION","QUALITATIF","QUANTITATIF",
+"COMITÉ","PRÉSENTATION","SLIDES","DECK","KICKOFF","GO","NOGO","ALIGNMENT","REVIEW",
+"EVALUATION","VALIDATION","SPÉCIFICATION","DELIVERABLE","WORKLOAD","CALCUL","CARTOGRAPHIE",
+"MODÉLISATION","SIMULATION","RÈGLEMENT","POLITIQUE","DIRECTIVE","COMPLIANCE","RISKSCORE",
+"ANOMALIE","CONSISTENCE","REDESIGN","REFONTE","ARCHITECTURE","DIAGRAMME","MAPPING",
+"STORYBOARD","JOURNEY","TOUCHPOINT","SATISFACTION","NPS","CES","CSAT","ONYX","INFERENCE",
+"MACHINELEARNING","IA","NEURAL","MODELISATION","ENTRAÎNEMENT","DATASET","FEATURES",
+"PREDICTION","CLASSIFICATION","ANALYSE","HYPOTHÈSE","EXPERIMENTATION","ABTEST",
+"CORRECTION","ANALOGIE","DISTRIBUTION","ALLOCATION","REPARTITION","COORDINATION"
+];
+
 let currentWord="", timer=100;
 
 function startTyperGame() {
@@ -288,7 +431,9 @@ function startSnakeGame() {
     updateScoreDisplay('snake');
     document.getElementById('btn-start-snake').classList.add('hidden');
     spawnFood();
-    gameInterval = setInterval(snakeLoop, 150); 
+    // Powerup Caféine : Snake va à 200ms au lieu de 150ms
+    let speed = userInventory.includes('power_coffee') ? 200 : 150;
+    gameInterval = setInterval(snakeLoop, speed);
     document.addEventListener('keydown', changeDirection);
 }
 
@@ -316,7 +461,7 @@ function snakeLoop() {
     if(head.x===food.x && head.y===food.y) {
         // ✅ Multiplicateur Serpent
         multiplier += 0.1;
-        score += 150 * multiplier;
+        score += 75 * multiplier;
         updateScoreDisplay('snake');
         spawnFood();
     } else {
@@ -349,6 +494,12 @@ async function gameOver(reason) {
     
     try {
         await fetch(`${API_URL}/score`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: currentUser.id, score: Math.floor(score) }) });
+        
+        // Mettre à jour le portefeuille localement après la fin du jeu si possible
+        // (Idéalement le backend renvoie le nouveau solde, sinon on ajoute localement)
+        currentWallet += Math.floor(score);
+        updateWalletDisplay();
+
     } catch(e) {}
     
     openWindow('leaderboard');

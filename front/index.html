@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinOS 95 - Glandeur Simulator V8</title>
+    <title>WinOS 95 - Glandeur Simulator V9</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -41,44 +41,66 @@
         
         <div id="boss-alert" class="hidden">🚨 PATRON EN APPROCHE ! (ESPACE !) 🚨</div>
 
-        <!-- WIDGET INFO (V8) -->
+        <!-- WIDGET INFO -->
         <div class="user-widget">
             <div id="rank-display">STAGIAIRE</div>
             <div>💰 <span id="wallet-display">0</span> €</div>
+        </div>
+
+        <!-- POST-IT DÉFIS -->
+        <div id="daily-challenge" class="post-it">
+            <h4>📌 À FAIRE AUJOURD'HUI</h4>
+            <p id="challenge-desc">Chargement...</p>
+            <p id="challenge-status" style="color:red;">EN COURS</p>
         </div>
 
         <div class="desktop-icons">
             <div class="icon" onclick="openWindow('popup')"><div class="icon-img">💥</div><div class="icon-text">Pop-up Panic</div></div>
             <div class="icon" onclick="openWindow('typer')"><div class="icon-img">⌨️</div><div class="icon-text">Corp. Typer</div></div>
             <div class="icon" onclick="openWindow('snake')"><div class="icon-img">📊</div><div class="icon-text">Budget.xls</div></div>
-            <!-- NOUVEAU : OUTLOOK -->
             <div class="icon" onclick="openWindow('mail')"><div class="icon-img">📧</div><div class="icon-text">Outlook</div></div>
+            <!-- NOUVEAUX JEUX -->
+            <div class="icon" onclick="openWindow('trade')"><div class="icon-img">📈</div><div class="icon-text">Trader Pro</div></div>
+            <div class="icon" onclick="openWindow('meeting')"><div class="icon-img">😴</div><div class="icon-text">Réunion</div></div>
             
             <div class="icon" onclick="openWindow('shop')"><div class="icon-img">🛒</div><div class="icon-text">Boutique</div></div>
             <div class="icon" onclick="openWindow('leaderboard')"><div class="icon-img">🏆</div><div class="icon-text">Classement</div></div>
              <div class="icon" onclick="logout()"><div class="icon-img">🚪</div><div class="icon-text">Fin de journée</div></div>
         </div>
 
-        <!-- FENÊTRE OUTLOOK (NOUVEAU JEU V8) -->
-        <div id="window-mail" class="os-window hidden" style="top: 15%; left: 25%;">
-            <div class="window-header"><span>Outlook_Express.exe</span><button class="close-btn" onclick="closeWindow('mail')">X</button></div>
-            <div class="window-body game-body" style="background: #fff; display:flex; flex-direction:column;">
-                <div class="game-hud" style="color:navy;">Gain: <span id="score-mail">0</span> € <span class="multiplier">x<span id="mult-mail">1.0</span></span></div>
-                
-                <div id="mail-container" style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; padding:10px;">
-                    <div id="mail-content" class="mail-box hidden">
-                        <div class="mail-header">
-                            <b>De:</b> <span id="mail-sender">...</span><br>
-                            <b>Objet:</b> <span id="mail-subject">...</span>
-                        </div>
-                        <div class="mail-body" id="mail-body">...</div>
-                        <div class="mail-actions">
-                            <button class="mail-btn reply" onclick="handleMailAction('reply')">RÉPONDRE 📤</button>
-                            <button class="mail-btn trash" onclick="handleMailAction('trash')">CORBEILLE 🗑️</button>
-                        </div>
-                    </div>
-                    <button id="btn-start-mail" onclick="startMailGame()">LIRE MAILS NON LUS</button>
+        <!-- FENÊTRE TRADER (NOUVEAU) -->
+        <div id="window-trade" class="os-window hidden" style="top: 10%; left: 30%;">
+            <div class="window-header"><span>WallStreet_Bet.exe</span><button class="close-btn" onclick="closeWindow('trade')">X</button></div>
+            <div class="window-body game-body" style="background:black; color:#0f0;">
+                <div class="game-hud">Portefeuille: <span id="trade-wallet">0</span> € | Action: <span id="stock-price">100</span> €</div>
+                <div id="trade-graph">
+                    <!-- Graphique simulé par des barres CSS -->
                 </div>
+                <div class="trade-controls">
+                    <button class="trade-btn buy" onclick="tradeAction('buy')">ACHETER (Investir 100€)</button>
+                    <div style="text-align:center;">Actions détenues : <span id="stock-owned">0</span></div>
+                    <button class="trade-btn sell" onclick="tradeAction('sell')">VENDRE TOUT</button>
+                </div>
+                <button id="btn-start-trade" onclick="startTradeGame()">OUVRIR LE MARCHÉ</button>
+            </div>
+        </div>
+
+        <!-- FENÊTRE RÉUNION (NOUVEAU) -->
+        <div id="window-meeting" class="os-window hidden" style="top: 20%; left: 20%;">
+            <div class="window-header"><span>Zoom_Meeting.exe</span><button class="close-btn" onclick="closeWindow('meeting')">X</button></div>
+            <div class="window-body game-body">
+                <div class="game-hud">Salaire gagné: <span id="score-meeting">0</span> €</div>
+                <div id="meeting-room">
+                    <div id="boredom-bar-container"><div id="boredom-bar"></div></div>
+                    <p style="text-align:center; font-size:12px;">Niveau d'Ennui (Ne pas atteindre 100% !)</p>
+                    
+                    <div id="boss-speech">"Il faut synergiser la roadmap..."</div>
+                    
+                    <div id="qte-area">
+                        <!-- Les actions apparaitront ici -->
+                    </div>
+                </div>
+                <button id="btn-start-meeting" onclick="startMeetingGame()">REJOINDRE LA RÉUNION</button>
             </div>
         </div>
 
@@ -89,6 +111,24 @@
                 <h3>💎 AMÉLIORATIONS & SKINS</h3>
                 <p>Solde actuel : <b id="shop-wallet">0</b> €</p>
                 <div id="shop-items" class="shop-grid"></div>
+            </div>
+        </div>
+
+        <div id="window-mail" class="os-window hidden" style="top: 15%; left: 25%;">
+            <div class="window-header"><span>Outlook_Express.exe</span><button class="close-btn" onclick="closeWindow('mail')">X</button></div>
+            <div class="window-body game-body" style="background: #fff; display:flex; flex-direction:column;">
+                <div class="game-hud" style="color:navy;">Gain: <span id="score-mail">0</span> € <span class="multiplier">x<span id="mult-mail">1.0</span></span></div>
+                <div id="mail-container" style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; padding:10px;">
+                    <div id="mail-content" class="mail-box hidden">
+                        <div class="mail-header"><b>De:</b> <span id="mail-sender">...</span><br><b>Objet:</b> <span id="mail-subject">...</span></div>
+                        <div class="mail-body" id="mail-body">...</div>
+                        <div class="mail-actions">
+                            <button class="mail-btn reply" onclick="handleMailAction('reply')">RÉPONDRE 📤</button>
+                            <button class="mail-btn trash" onclick="handleMailAction('trash')">CORBEILLE 🗑️</button>
+                        </div>
+                    </div>
+                    <button id="btn-start-mail" onclick="startMailGame()">LIRE MAILS NON LUS</button>
+                </div>
             </div>
         </div>
 

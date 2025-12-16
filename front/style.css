@@ -1,10 +1,10 @@
-/* ... VARIABLES & BODY ... */
+/* ... TOUT TON CSS PRÉCÉDENT ... */
 :root { --bg-color: #2b002b; --win-gray: #c0c0c0; --win-dark-gray: #808080; --win-blue: #000080; --win-teal: #008080; --win-light: #ffffff; --win-border-dark: #000000; }
 body { margin: 0; height: 100vh; font-family: 'Courier New', Courier, monospace; overflow: hidden; background-color: var(--win-teal); user-select: none; color: black; transition: background 0.5s ease; }
 .hidden { display: none !important; }
 button { font-family: 'Courier New', Courier, monospace; cursor: pointer; }
 
-/* LOGIN & BOSS */
+/* ... (Garde Login, Boss, Window styles inchangés) ... */
 .full-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--bg-color), #000); display: flex; justify-content: center; align-items: center; z-index: 9999; }
 .login-window { width: 300px; box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.5); }
 .buttons { display: flex; justify-content: space-around; margin-top: 15px; }
@@ -15,15 +15,11 @@ input { width: 90%; padding: 5px; margin-bottom: 5px; border: 2px inset var(--wi
 .update-box { background: #c0c0c0; border: 2px outset white; padding: 20px; text-align: center; width: 400px; }
 .progress-bar-bg { width: 100%; height: 20px; background: white; border: 2px inset gray; margin: 10px 0; }
 .progress-bar-fill { width: 12%; height: 100%; background: blue; }
-
-/* WINDOWS */
 .os-window { background-color: var(--win-gray); border-top: 2px solid var(--win-light); border-left: 2px solid var(--win-light); border-right: 2px solid var(--win-border-dark); border-bottom: 2px solid var(--win-border-dark); padding: 3px; display: flex; flex-direction: column; position: absolute; width: 600px; height: 450px; box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5); }
 .window-header { background: linear-gradient(90deg, var(--win-blue), #1084d0); color: white; padding: 3px 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; height: 25px; cursor: move; }
 .window-body { padding: 10px; flex-grow: 1; position: relative; overflow: hidden; }
 .close-btn { background: var(--win-gray); border: 1px outset var(--win-light); font-weight: bold; width: 18px; text-align: center; font-size: 12px; }
 .close-btn:active { border: 1px inset var(--win-light); }
-
-/* DESKTOP & WIDGET (MODIFIÉ) */
 .desktop-icons { padding: 20px; display: flex; flex-direction: column; gap: 25px; flex-wrap: wrap; height: 80vh; align-content: flex-start; }
 .icon { width: 80px; text-align: center; color: white; cursor: pointer; text-shadow: 1px 1px 0 #000; }
 .icon:hover .icon-img { filter: brightness(1.2); }
@@ -32,39 +28,27 @@ input { width: 90%; padding: 5px; margin-bottom: 5px; border: 2px inset var(--wi
 .icon-text { font-size: 14px; padding: 2px; }
 .user-widget { position: absolute; top: 10px; right: 10px; background: black; color: #0f0; border: 2px inset white; padding: 5px 15px; font-weight: bold; font-family: 'Courier New'; font-size: 16px; z-index: 5; text-align: right; }
 #rank-display { font-size: 12px; color: yellow; text-transform: uppercase; border-bottom: 1px solid #333; margin-bottom: 2px; }
-
-/* TASKBAR */
 .taskbar { position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; background: var(--win-gray); border-top: 2px solid var(--win-light); display: flex; align-items: center; padding: 2px; z-index: 1000; }
 .start-btn { font-weight: bold; display: flex; align-items: center; gap: 5px; padding: 4px 10px; margin-right: 10px; border: 2px outset var(--win-light); background: var(--win-gray); font-size: 14px; }
 .active-apps { flex-grow: 1; border-left: 2px solid var(--win-dark-gray); border-right: 2px solid var(--win-light); padding: 0 5px; display: flex; align-items: center; height: 80%; }
 .app-tab { background: #d4d4d4; border: 2px inset var(--win-light); padding: 3px 10px; width: 150px; font-size: 12px; display: flex; align-items: center; }
 .tray { border: 2px inset var(--win-light); padding: 5px 15px; margin-right: 5px; background: var(--win-gray); font-size: 14px; min-width: 50px; text-align: center; }
-
-/* GAMES COMMON */
 .game-hud { font-weight: bold; margin-bottom: 10px; font-size: 16px; border-bottom: 1px solid rgba(0, 0, 0, 0.1); padding-bottom: 5px; }
 .multiplier { margin-left: 10px; color: red; background: #ffff00; padding: 2px 5px; border: 1px dotted red; font-size: 14px; }
-
-/* GAME: POPUP */
 #game-area-popup { background-color: white; width: 100%; height: 100%; position: relative; border: 2px inset var(--win-light); overflow: hidden; cursor: default; }
 .popup { position: absolute; width: 150px; background: var(--win-gray); border: 2px outset var(--win-light); color: black; font-size: 12px; box-shadow: 4px 4px 0 #000; cursor: crosshair; }
 .popup-header { background: var(--win-blue); color: white; padding: 2px; cursor: pointer; }
-
-/* GAME: TYPER */
 .dark-bg { background: black; color: #0f0; }
 #typer-container { text-align: center; margin-top: 20px; display: flex; flex-direction: column; align-items: center; height: 100%; }
 #word-display { font-size: 32px; margin: 20px 0; text-transform: uppercase; font-weight: bold; text-shadow: 0 0 10px #0f0; }
 #typer-input { background: transparent; border: none; border-bottom: 2px solid #0f0; color: #0f0; font-size: 24px; text-align: center; outline: none; width: 80%; }
 #timer-bar { width: 80%; height: 10px; background: #333; margin-top: 20px; border: 1px solid #0f0; }
 #timer-progress { width: 100%; height: 100%; background: #0f0; transition: width 0.1s linear; }
-
-/* GAME: SNAKE */
 #snake-grid { width: 400px; height: 300px; background: white; border: 1px solid #ccc; margin: 10px auto; display: grid; grid-template-columns: repeat(20, 1fr); grid-template-rows: repeat(15, 1fr); border: 2px inset #ccc; }
 .cell { border: 1px dotted #eee; box-sizing: border-box; }
 .snake-body { background-color: #217346; border: 1px solid white; }
 .snake-head { background-color: #1e5c36; }
 .snake-food { background-color: gold; border-radius: 50%; box-shadow: 1px 1px 2px black; }
-
-/* GAME: MAIL (NOUVEAU V8) */
 .mail-box { border: 2px inset white; background: #e0e0e0; padding: 10px; margin-top: 20px; text-align: left; }
 .mail-header { border-bottom: 1px solid gray; padding-bottom: 5px; margin-bottom: 5px; font-size: 14px; }
 .mail-body { background: white; border: 1px solid gray; height: 100px; padding: 10px; overflow-y: auto; margin-bottom: 10px; font-family: Arial, sans-serif; font-size: 14px; }
@@ -72,8 +56,6 @@ input { width: 90%; padding: 5px; margin-bottom: 5px; border: 2px inset var(--wi
 .mail-btn { padding: 10px 20px; font-weight: bold; border: 2px outset white; }
 .mail-btn.reply { background: #90ee90; }
 .mail-btn.trash { background: #ffcccb; }
-
-/* BOUTIQUE & SKINS */
 .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .shop-item { border: 2px groove white; padding: 10px; text-align: center; background: #eee; }
 .shop-item h4 { margin: 5px 0; font-size: 14px; text-transform: uppercase; }
@@ -83,8 +65,6 @@ input { width: 90%; padding: 5px; margin-bottom: 5px; border: 2px inset var(--wi
 .owned { background: #d0f0c0; border-color: green; }
 #leaderboard-list { list-style: none; padding: 0; margin: 0; max-height: 350px; overflow-y: auto; }
 #leaderboard-list li { padding: 5px 0; border-bottom: 1px dotted black; font-size: 14px; }
-
-/* SKINS */
 body.bg-default { background-color: #008080; }
 body.bg-matrix { background-color: black; background-image: linear-gradient(0deg, transparent 24%, rgba(0, 255, 0, .3) 25%, rgba(0, 255, 0, .3) 26%, transparent 27%, transparent 74%, rgba(0, 255, 0, .3) 75%, rgba(0, 255, 0, .3) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0, 255, 0, .3) 25%, rgba(0, 255, 0, .3) 26%, transparent 27%, transparent 74%, rgba(0, 255, 0, .3) 75%, rgba(0, 255, 0, .3) 76%, transparent 77%, transparent); background-size: 50px 50px; }
 body.bg-xp { background: linear-gradient(#1e5799 0%, #2989d8 50%, #207cca 51%, #7db9e8 100%); }
@@ -92,3 +72,36 @@ body.bg-pink { background: #ff71ce; }
 body.cursor-default { cursor: auto; }
 body.cursor-pizza { cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><text y="20" font-size="20">🍕</text></svg>'), auto !important; }
 body.cursor-gold { cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><text y="20" font-size="20">🖕</text></svg>'), auto !important; }
+
+/* --- NOUVEAU V9 : POST-IT & TRADER & MEETING --- */
+.post-it {
+    position: absolute; top: 100px; right: 20px;
+    width: 150px; height: 150px;
+    background: #ffff88; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    padding: 15px; font-family: 'Comic Sans MS', cursive, sans-serif;
+    color: black; transform: rotate(2deg); z-index: 1;
+}
+.post-it h4 { margin: 0 0 10px 0; text-decoration: underline; font-size: 14px; }
+
+/* TRADER */
+#trade-graph {
+    width: 100%; height: 200px; border: 1px solid #0f0; margin: 10px 0;
+    display: flex; align-items: flex-end; justify-content: flex-end;
+    gap: 2px; overflow: hidden;
+}
+.trade-bar { width: 5px; background: #0f0; }
+.trade-btn { padding: 10px; width: 100%; margin: 5px 0; font-weight: bold; border: 2px outset white; cursor: pointer; }
+.trade-btn.buy { background: #008000; color: white; }
+.trade-btn.sell { background: #800000; color: white; }
+
+/* MEETING */
+#meeting-room { margin: 20px 0; text-align: center; }
+#boredom-bar-container { width: 100%; height: 20px; background: black; border: 1px solid white; }
+#boredom-bar { width: 0%; height: 100%; background: red; transition: width 0.1s; }
+#boss-speech { font-style: italic; background: #eee; padding: 5px; border-radius: 10px; display: inline-block; margin: 10px 0; min-width: 200px; }
+#qte-area { height: 60px; display: flex; justify-content: center; align-items: center; }
+.qte-btn { 
+    background: orange; border: 2px outset white; padding: 10px 20px; 
+    font-weight: bold; cursor: pointer; animation: pop 0.2s;
+}
+@keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
